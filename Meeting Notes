@@ -1,0 +1,28 @@
+# Zoom Meeting Notes
+
+## 11/19/2021
+
+- Topic finalized with Andee a few days prior, looking at an Olympic dataset and trying to predict future medalings
+all related to the Russian Doping scandel in the 2012 London games.
+- For thanksgiving break everybody needs to look at the data and clean it up a bit. Find some questions and see to it 
+to try some modeling
+- Meet again somepoint towards the end of thanksgiving break.
+
+## 11/28/2021
+
+- Reconvenied after thanksgiving. 
+- Evan and Jake discussed the project, both found issues with the overall size of our data. Any model we tried to fit 
+held restirctions to a size of 2.4 GB when our data was almost double that. Looked at graphs depicting medal standings 
+related to height and weight.
+- After looking at the athletes that were penalized for doping we found a.) most of it was winter sports (bobsledding, 
+skeleton, cross-country skiinng, hockey, luge, etc..) and b.) the russian team got a gold medal in 4 person bobsledding
+as well as a gold medal in 2 person bobsledding. Every member of these two teams ended up being categorized as postiive
+for doping 6 other russian bobsledders who did not place. We came to the decision to transition to one singular sport and 
+try and classify the most recent years (2004-2012) of olympic athletes to predict the next two olympic games. 
+- Weight is in kilos so we converted to pounds.
+
+- Goals for next meeting:
+  Evan: Build a tree based model on the data
+  Jake: Build a QDA classification 
+  Ali: Build a tree based model and QDA classification
+- During next meeting reconvene with what we found and compare.
