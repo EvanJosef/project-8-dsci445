@@ -26,3 +26,13 @@ try and classify the most recent years (2004-2012) of olympic athletes to predic
   Jake: Build a QDA classification 
   Ali: Build a tree based model and QDA classification
 - During next meeting reconvene with what we found and compare.
+
+## 12/2/2021
+- Jake and Evan shared fitted models of tree and qda methods
+- Bagged trees and rf saw the most success, especially with binary response (medal, did not medal)
+- Most problems with other methods centered around not outputting predicted athletes as medal winners (hardly ever)
+- Looked at potential other sports, all have same problems with no correlation between any predictor variables. Best prospect was cross country skiing
+Goals:
+Evan: Look further into tree based methods
+Jake: attempt to get knn and qda to work
+Ali: fit knn model and get an idea on error rates
