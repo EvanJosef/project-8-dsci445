@@ -36,3 +36,11 @@ Goals:
 Evan: Look further into tree based methods
 Jake: attempt to get knn and qda to work
 Ali: fit knn model and get an idea on error rates
+
+## 12/5/2021
+- Jake, Evan, and Ali met to discuss their findings on trees and KNN from the goals of last meeting.
+- KNN seemed to work the best in terms of error rate for our model predictions, still not amazing prediction results but the best so far.
+- Split our data into just using predicting on a few years of data to predict the 2014 winter olympic bobsleigh teams. 
+- Started discussing how we would produce the presentation
+Goals:
+Talk to Andee about potential options to limit the number of predictions as our predictions were yielding more medals than could have been given out.
