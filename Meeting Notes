@@ -44,3 +44,13 @@ Ali: fit knn model and get an idea on error rates
 - Started discussing how we would produce the presentation
 Goals:
 Talk to Andee about potential options to limit the number of predictions as our predictions were yielding more medals than could have been given out.
+
+## 12/6/2021
+-Jake and Evan met to discuss the effectiveness of orbital logistical regression
+  -Very effective with our dataset, will use for final prediction
+-Discussed presentation format
+  -Using r presentation inside of r studio
+  -Evan will create csv files out of our cleaned datasets so that they will be quicker to call in our presentaiton and model scripts
+  -Will each update presentation file that is in github once we add our own model fits/results and visuals
+Goals:
+  Finish polished scripts/csv files/jpg for presentation and begin adding to presentation file
