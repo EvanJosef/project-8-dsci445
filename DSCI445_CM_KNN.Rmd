@@ -1,0 +1,76 @@
+---
+title: "DSCI 445 Group Project"
+author: "Ali Almarbooei"
+date: "12/1/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#load packages
+```{r}
+library("ISLR")
+library("class")
+library("caret")
+library(dplyr)
+library(tidyr)
+```
+
+
+```{r}
+#load the data
+athletes = read.csv("athletes.csv", header=T, sep = ',')
+summary(athletes)
+```
+
+#convert character variables to factors
+```{r}
+athletes$sex <- as.numeric(as.factor(athletes$sex))
+```
+
+```{r}
+athletes$medal <- (athletes$gold +athletes$silver+athletes$bronze)
+athletes$win <- ifelse(athletes$medal>0,1,0)
+athletes_df <- as.data.frame(athletes[,c(6,7,13)])
+```
+
+```{r}
+#replace NA in height and weight with the mean of height and weight respectively
+athletes_df <-athletes_df %>% mutate_at(vars(height, weight),~ifelse(is.na(.x), mean(.x, na.rm = TRUE), .x))
+```
+
+```{r}
+#normalize
+athletes_df$height <- scale(athletes_df$height)
+athletes_df$weight <- scale(athletes_df$weight)
+```
+
+```{r}
+#split the data into training and testing data
+athletes_idx <- sample(nrow(athletes_df), .7*(nrow(athletes_df)))
+athletes_trn <- athletes_df[athletes_idx, ]   
+athletes_tst <- athletes_df[-athletes_idx, ]   
+
+#Training data
+x_athletes_trn <- athletes_trn[, -4]  
+y_athletes_trn <- athletes_trn$win 
+
+#testing data 
+x_athletes_tst = athletes_tst[, -4]
+y_athletes_tst = athletes_tst$win
+```
+
+```{r}
+#Create KNNN model and check results, Height, weight and medals are used to predict a win
+set.seed(42)
+knn.fit <- knn(train=x_athletes_trn, test  = x_athletes_tst,   cl = y_athletes_trn, k = 3)
+cm <- confusionMatrix(knn.fit,as.factor(y_athletes_tst)) 
+cm 
+```
+
+```{r}
+#get error rate
+table(knn.fit,as.factor(y_athletes_tst))
+```
+
