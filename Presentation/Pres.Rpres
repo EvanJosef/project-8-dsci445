@@ -1,0 +1,250 @@
+Predicting Olympic Data Related to Russian Doping
+========================================================
+author: Evan Kessler Jake Becker Ali Almarbooei
+autosize: true
+
+```{r setup, echo = FALSE, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(MASS)
+library(caret)
+library(class)
+library(tree); library(randomForest)
+bobsled = read.csv("Data/tafmens.csv") %>%
+  mutate(X = NULL) %>%
+  mutate(Medal = factor(Medal, levels = c("No Medal", "Bronze", "Silver", "Gold", ordered = TRUE)))
+bobbin = read.csv("binary.csv") %>%
+  mutate(X = NULL) %>%
+  mutate(Medal = as.factor(Medal))
+set.seed(445)
+bobsledT = bobsled %>%
+  filter(Year != 2014)
+bobsled14 = bobsled %>%
+  filter(Year == 2014)
+binaryT = bobbin %>%
+  filter(Year != 2014)
+binary14 = bobsled %>%
+  filter(Year == 2014)
+samples = sample(nrow(bobsledT), nrow(bobsledT) * .8)
+knntrain = na.omit(bobbin[samples,])
+knntest = na.omit(bobbin[-samples,])
+```
+
+Motivation
+========================================================
+
+Documentary Icarus
+
+- Kaggle dataset on Olympic Athletes and predicting their medals
+- Never openly discussed who were the proper winners of the medals that the Russian team won
+- Articles depicting that 13 medals won in 2014 Sochi Olympics were fraudulent
+- 43 total Russian athletes were caught doping
+
+Problems & Solution
+========================================================
+
+- Different Sports require different physical qualities
+- Weight classes
+- Too many levels to our predictors
+- Too much to predict, results would likely be skewed
+- 2014 Mens Bobsled
+
+Data
+========================================================
+
+* Consists of athlete data from 1896-2016
+* 10 of the 43 dopers participated in either two or four person bobsledding
+* A four man and two man team received gold medals
+* Our dataset does not include the athletes that were caught doping
+
+Data cont.
+========================================================
+
+```{r, echo = FALSE}
+ggplot(bobsledT) + 
+  geom_point(aes(x = Height, y = Weight, colour = Medal)) + 
+  xlab("Height (cm)")
+```
+
+
+Height and Weight
+========================================================
+
+```{r, echo=FALSE}
+bobsled %>%
+  ggplot() + 
+  geom_boxplot(aes(x = Medal,
+                   y = Weight,
+                   col = Medal))
+```
+***
+```{r, echo=FALSE}
+bobsled %>%
+  ggplot() + 
+  geom_boxplot(aes(x = Medal,
+                   y = Height,
+                   col = Medal))
+```
+
+Tree
+========================================================
+
+```{r, echo = FALSE}
+dftree <- tree(Medal ~ ., data = bobsledT)
+# Gives us Weight, Height, Age, Year, X (ID) as best predictors
+
+plot(dftree); text(dftree)
+```
+
+Tree Results
+========================================================
+
+```{r, echo = FALSE}
+tree_fit <- tree(Medal ~ Height + Weight + Age, bobsledT)
+confusion <- table(pred = predict(tree_fit, bobsled14, type = "class"), true = bobsled14$Medal)
+confusion
+```
+
+Bagging
+========================================================
+
+```{r, echo=FALSE}
+# Bagging
+source('tandfmensTrees.R')
+
+varImpPlot(bag_fit)
+
+# It looks like from the graph that Weight, Team, Name are the best variables
+
+
+# Random Forests
+
+```
+
+Bagging Confusion
+========================================================
+
+```{r, echo = FALSE}
+confusion_bag
+```
+
+Random Forest
+========================================================
+
+```{r, echo = FALSE}
+confusion_rf
+```
+
+KNN
+========================================================
+
+- Problems with prediction total and accuracy
+
+- Binary response
+```{r, echo = FALSE}
+bobknn = knn3(Medal ~ Age + Height + Weight, data = knntrain, k = 3)
+bobpred = predict(bobknn, newdata = knntest)
+bobpredvec = c(ifelse(bobpred[,1] > .5, 0, 1))
+table(actual = knntest$Medal, predicted = bobpredvec)
+```
+
+KNN
+========================================================
+
+```{r, echo = FALSE}
+plotframe = data.frame(knntest, predicted = bobpredvec)
+ggplot() + 
+  geom_point(aes(x = Weight,
+                 y = Height,
+                 col = predicted),
+             data = plotframe)
+```
+
+Ordinal Logistic Regression
+========================================================
+
+- Returns a probability of observation belonging to each class
+
+- Best used for ordinal responses (i.e. placement in a competition)
+
+- Coefficient returns one unit increase of variable's effect on log odds of response
+
+- Intercept returns log odds when other variables are equal to 0
+
+Ordinal Logistic Regression
+========================================================
+
+```{r, echo = FALSE}
+probit = polr(Medal ~ Age + Weight + Height, data = bobsledT, Hess = TRUE)
+probpred = predict(probit, newdata = bobsled14, type = 'probs')
+summary(probit)
+probitDf = cbind(bobsled14, probpred)
+```
+
+Prediction Measurements
+========================================================
+
+- Probabilities of winning each medal are summed for each athlete
+
+- Team member's probabilities are averaged
+
+- Largest is the winner
+
+Two and Four Man Results
+========================================================
+
+```{r, echo = FALSE}
+probitDf %>% 
+  filter(Event == "Bobsleigh Men's Two") %>%
+  mutate(MedalProb = Gold + Silver + Bronze) %>% 
+  group_by(Team) %>%
+  summarize(Win = mean(MedalProb)) %>%
+  arrange(desc(Win)) %>%
+  head(8)
+```
+***
+```{r, echo = FALSE}
+probitDf %>% 
+  filter(Event == "Bobsleigh Men's Four") %>%
+  mutate(MedalProb = Gold + Silver + Bronze) %>% 
+  group_by(Team) %>%
+  summarize(Win = mean(MedalProb)) %>%
+  arrange(desc(Win)) %>%
+  head(8)
+```
+
+Predictions 
+========================================================
+
+```{r, echo = FALSE}
+probitDf %>% 
+  filter(Event == "Bobsleigh Men's Two") %>%
+  mutate(MedalProb = Gold + Silver + Bronze) %>% 
+  ggplot() + 
+  geom_point(aes(x = Height,
+                 y = Weight,
+                 col = MedalProb)) + 
+  ggtitle("Men's Twos")
+```
+***
+```{r, echo = FALSE}
+probitDf %>% 
+  filter(Event == "Bobsleigh Men's Four") %>%
+  mutate(MedalProb = Gold + Silver + Bronze) %>% 
+  group_by(Team) %>%
+  ggplot() + 
+  geom_point(aes(x = Height,
+                 y = Weight,
+                 col = MedalProb)) + 
+  ggtitle("Men's Fours")
+```
+
+Extra Research 
+========================================================
+
+- Get data on individual team timed trials
+- Combine individuals into their respected teams
+- Run models on how teams performed together
+- Find out how to weight based on Country (US, Canada, Switzerland)
+
+
